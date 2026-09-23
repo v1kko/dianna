@@ -141,7 +141,7 @@ class KERNELSHAPImage:
                                                      l1_reg=l1_reg)
 
         # create heat_maps where shape is (n_classes, *image_segments.shape)
-        heat_maps = _create_heatemaps(shap_values_list, self.image_segments)
+        heat_maps = _create_heatmaps(shap_values_list, self.image_segments)
 
         if labels is not None:
             heat_maps = heat_maps[list(labels)]
@@ -231,7 +231,7 @@ class KERNELSHAPImage:
                                      {self.input_node_name: model_input})[0]
 
 
-def _create_heatemaps(shap_values_list, image_segments):
+def _create_heatmaps(shap_values_list, image_segments):
     """Create heatmaps from the shap values and the image segments.
 
     The final heatmaps has a shape of (n_classes, *image_segments.shape).
