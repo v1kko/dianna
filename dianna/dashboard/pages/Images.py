@@ -1,9 +1,9 @@
 import base64
 import sys
 import streamlit as st
+from _image_utils import add_softmax
 from _image_utils import input_layout
 from _image_utils import open_image
-from _model_utils import add_softmax
 from _model_utils import load_labels
 from _model_utils import load_model
 from _models_image import explain_image_dispatcher
