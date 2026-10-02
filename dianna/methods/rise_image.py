@@ -2,7 +2,7 @@ import numpy as np
 from dianna import utils
 from dianna.utils.maskers import generate_interpolated_float_masks_for_image
 from dianna.utils.predict import make_predictions
-from dianna.utils.rise_utils import normalize
+from dianna.utils.rise_utils import saliency
 
 
 class RISEImage:
@@ -81,9 +81,8 @@ class RISEImage:
         self.predictions = make_predictions(masked, runner, batch_size)
 
         # Reshape to (n_classes, *img_shape)
-        saliency = self.predictions.T.dot(self.masks.reshape(
-            self.n_masks, -1)).reshape(-1, *img_shape)
-        result = normalize(saliency, self.n_masks, active_p_keep)
+        result = saliency(self.predictions, self.masks,
+                          active_p_keep).reshape(-1, *img_shape)
         if labels is not None:
             result = result[list(labels)]
         return result
