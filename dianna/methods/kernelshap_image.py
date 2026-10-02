@@ -4,6 +4,7 @@ import shap
 import skimage.segmentation
 from dianna import utils
 from dianna._logging_utils import LoggingContext
+from dianna.utils.predict import make_predictions
 
 
 class KERNELSHAPImage:
@@ -64,6 +65,7 @@ class KERNELSHAPImage:
         compactness=10.0,
         sigma=0,
         l1_reg=False,
+        batch_size=100,
         **kwargs,
     ):
         """Run the KernelSHAP explainer.
@@ -96,6 +98,7 @@ class KERNELSHAPImage:
             l1_reg (str, float or bool): Feature selection of the SHAP regression, see shap's
                                          KernelExplainer.shap_values. False (default) gives every
                                          segment a value, e.g. "num_features(10)" keeps only the top 10.
+            batch_size (int): Number of masked images to create and run through the model at once.
             kwargs: These keyword parameters are passed on
 
         Other keyword arguments: see the documentation of kernel explainer of SHAP
@@ -112,6 +115,7 @@ class KERNELSHAPImage:
         self.labels = labels
         self.input_data = self._prepare_image_data(input_data)
         self.background = background
+        self.batch_size = batch_size
 
         # create onnxruntime session once for efficient repeated inference
         import onnxruntime as rt  # pylint: disable=import-outside-toplevel
@@ -214,10 +218,16 @@ class KERNELSHAPImage:
     def _runner(self, features):
         """Define a runner/wrapper to load models and values.
 
+        Masks and runs the samples in batches, so memory does not grow with the number of samples.
+
         Args:
             features (np.ndarray): A matrix of samples (# samples x # features)
                                    on which to explain the model's output.
         """
+        return make_predictions(features, self._run_batch, self.batch_size)
+
+    def _run_batch(self, features):
+        """Mask the image for a batch of samples and run the model on it."""
         model_input = self._mask_image(features, self.image_segments,
                                        self.input_data, self.background,
                                        self.channels_axis_index,
