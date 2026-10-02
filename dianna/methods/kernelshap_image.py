@@ -63,6 +63,7 @@ class KERNELSHAPImage:
         n_segments=100,
         compactness=10.0,
         sigma=0,
+        l1_reg=False,
         **kwargs,
     ):
         """Run the KernelSHAP explainer.
@@ -92,6 +93,9 @@ class KERNELSHAPImage:
                                square/cubic.
             sigma (float): Width of Gaussian smoothing kernel for pre-processing for
                            each dimension of the image. Zero means no smoothing.
+            l1_reg (str, float or bool): Feature selection of the SHAP regression, see shap's
+                                         KernelExplainer.shap_values. False (default) gives every
+                                         segment a value, e.g. "num_features(10)" keeps only the top 10.
             kwargs: These keyword parameters are passed on
 
         Other keyword arguments: see the documentation of kernel explainer of SHAP
@@ -133,7 +137,8 @@ class KERNELSHAPImage:
         with LoggingContext(level=logging.CRITICAL):
             shap_values_list = explainer.shap_values(np.ones(
                 (len(self.labels), n_segments)),
-                                                nsamples=nsamples)
+                                                nsamples=nsamples,
+                                                l1_reg=l1_reg)
 
         # create heat_maps where shape is (n_classes, *image_segments.shape)
         heat_maps = _create_heatemaps(shap_values_list, self.image_segments)

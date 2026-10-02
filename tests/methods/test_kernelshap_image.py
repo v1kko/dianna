@@ -75,3 +75,11 @@ class ShapOnImages(TestCase):
         assert heatmaps[0].shape[0] == input_data.shape[1]
         assert heatmaps[0].shape[1] == input_data.shape[2]
         assert heatmaps.shape[0] == len(labels)
+
+    def test_shap_explain_image_all_segments(self):
+        """Every segment gets a shap value by default, not only the top 10 (shap's own default)."""
+        input_data = np.random.random((1, 28, 28))
+        explainer = KERNELSHAPImage()
+        heatmap = explainer.explain("./tests/test_data/mnist_model.onnx", input_data, [0],
+                                    nsamples=1000, background=0, n_segments=50)[0]
+        assert np.count_nonzero(np.unique(heatmap)) > 10
